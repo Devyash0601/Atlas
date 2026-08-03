@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    actor User as Researcher
+    participant API as FastAPI Gateway
+    participant Orch as Workflow Orchestrator
+    participant Plan as Planner Agent
+    participant GEE as Earth Engine Agent
+    participant Ver as Verification Agent
+    participant Rep as Report Agent
+
+    User->>API: Submit Research Question (e.g. UHI in Paris)
+    API->>Orch: Initialize Research Project & Workflow
+    Orch->>Plan: Generate Execution Plan
+    Plan-->>Orch: Structured Plan Schema
+    Orch-->>User: Plan Awaiting Human Approval
+    User->>API: Approve Workflow Plan
+    API->>Orch: Trigger Asynchronous Pipeline
+    Orch->>GEE: Execute Earth Engine Job (Landsat/Sentinel)
+    GEE-->>Orch: Export GeoTIFF & Zonal Stats
+    Orch->>Ver: Validate Claims against Evidence
+    Ver-->>Orch: Claim Verification Status (VERIFIED/PARTIAL)
+    Orch->>Rep: Assemble Publication Report
+    Rep-->>Orch: Final Markdown Report
+    Orch-->>User: Deliver Verifiable Scientific Report

@@ -1,0 +1,5 @@
+graph TD
+    AppRouter["app/ Layout & Pages"] --> Components["components/ (Maps, Charts, Reports, Forms)"]
+    Components --> CustomHooks["hooks/"]
+    CustomHooks --> ApiClient["lib/api-client.ts"]
+    ApiClient -->|REST HTTP| FastAPI["Backend API (/api/v1)"]

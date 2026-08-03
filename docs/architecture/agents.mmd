@@ -1,0 +1,10 @@
+graph LR
+    Orchestrator["Workflow Orchestrator"]
+    Orchestrator -->|1. Objective| Planner["Planner Agent"]
+    Orchestrator -->|2. Context| Literature["Literature Agent"]
+    Orchestrator -->|3. Plan| GEE["Earth Engine Agent"]
+    Orchestrator -->|4. Outputs| Analysis["Analysis Agent"]
+    Orchestrator -->|5. Metrics| Verification["Verification Agent"]
+    Orchestrator -->|6. Verified Claims| Report["Report Agent"]
+
+    style Orchestrator fill:#1e293b,stroke:#3b82f6,stroke-width:2px

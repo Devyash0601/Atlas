@@ -1,0 +1,36 @@
+erDiagram
+    USERS ||--o{ PROJECTS : creates
+    PROJECTS ||--o{ WORKFLOWS : runs
+    WORKFLOWS ||--o{ DATASETS : retrieves
+    WORKFLOWS ||--o{ EXPERIMENTS : executes
+    WORKFLOWS ||--o{ EVIDENCE : gathers
+    WORKFLOWS ||--o| REPORTS : generates
+
+    USERS {
+        uuid id PK
+        string email
+        string name
+        timestamp created_at
+    }
+    PROJECTS {
+        uuid id PK
+        uuid user_id FK
+        string title
+        string region
+        string status
+    }
+    WORKFLOWS {
+        uuid id PK
+        uuid project_id FK
+        json planner_output
+        string approval_status
+        string execution_status
+    }
+    EVIDENCE {
+        uuid id PK
+        uuid workflow_id FK
+        string source_type
+        string citation
+        float confidence
+        string verification_status
+    }

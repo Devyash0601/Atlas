@@ -1,0 +1,8 @@
+graph TD
+    Routers["interfaces/api/routers"] -->|DTOs / Commands| UseCases["application/services"]
+    UseCases -->|Domain Models| Domain["domain/entities & services"]
+    Infrastructure["infrastructure/ (Postgres, Qdrant, Ollama, GEE)"] -.->|Implements Contracts| DomainRepos["domain/repositories & providers"]
+    UseCases -->|Injects via DI| DomainRepos
+    Shared["shared/ (config, logging, exceptions)"] --> Routers
+    Shared --> UseCases
+    Shared --> Infrastructure

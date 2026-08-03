@@ -1,0 +1,30 @@
+graph TD
+    User["User / Researcher"] -->|HTTPS / REST API| Frontend["Next.js Frontend"]
+    Frontend -->|REST / API Gateway| API["FastAPI Backend Layer"]
+    
+    subgraph Core ["Application & Domain Core"]
+        API --> Orchestrator["Workflow Orchestrator"]
+        Orchestrator --> Agents["Stateless Agents Pipeline"]
+        Agents --> Planner["Planner Agent"]
+        Agents --> Literature["Literature Agent"]
+        Agents --> GEEAgent["Earth Engine Agent"]
+        Agents --> Analysis["Analysis Agent"]
+        Agents --> Verification["Verification Agent"]
+        Agents --> Report["Report Agent"]
+    end
+
+    subgraph Providers ["Provider Interfaces (Infrastructure Isolation)"]
+        Planner --> LLMProv["LLMProvider (Ollama Qwen3)"]
+        Literature --> VectorProv["VectorStoreProvider (Qdrant)"]
+        Literature --> EmbedProv["EmbeddingProvider (nomic-embed-text)"]
+        GEEAgent --> GEEProv["EarthEngineProvider (GEE SDK)"]
+        Analysis --> VisProv["VisualizationProvider (Plotly/Matplotlib)"]
+        Verification --> EvidenceEngine["Scientific Verification Engine"]
+        Report --> StorageProv["StorageProvider (Local Output)"]
+    end
+
+    subgraph Persistence ["Persistence Layer"]
+        API --> Postgres[("PostgreSQL (System of Record)")]
+        Literature --> Qdrant[("Qdrant (Vector Embeddings)")]
+        Orchestrator --> Redis[("Redis (Cache & Task Queue)")]
+    end
