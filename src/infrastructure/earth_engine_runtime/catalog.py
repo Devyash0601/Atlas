@@ -1,54 +1,132 @@
-"""Earth Observation dataset catalog specifications for Landsat, Sentinel-2, and MODIS."""
+"""GEEDatasetCatalog supporting Sentinel-2, Landsat, MODIS, DEM, ERA5, CHIRPS, and Dynamic World."""
 
-from dataclasses import dataclass
-from typing import ClassVar
+from dataclasses import dataclass, field
+from typing import Any, ClassVar
+
+from src.infrastructure.earth_engine_runtime.gee_error_handler import EEDatasetUnavailable
 
 
 @dataclass(frozen=True)
-class DatasetSpec:
-    """Specification for Earth Observation satellite dataset."""
+class DatasetMetadata:
+    """Earth Engine satellite dataset metadata entry."""
 
-    collection_id: str
+    asset_id: str
     name: str
-    satellite: str
-    spatial_resolution_meters: float
     bands: list[str]
+    resolution_meters: float
+    temporal_coverage: str
+    provider: str
+    cloud_mask_strategy: str
+    recommended_indices: list[str] = field(default_factory=list)
+
+    @property
+    def satellite(self) -> str:
+        """Backward compatibility satellite attribute."""
+        if "Sentinel" in self.name:
+            return "Sentinel-2"
+        if "Landsat" in self.name:
+            return "Landsat 8/9"
+        return self.provider
 
 
-class DatasetCatalog:
-    """Catalog of supported satellite collections."""
+class GEEDatasetCatalog:
+    """Production Earth Engine Dataset Catalog."""
 
-    DATASETS: ClassVar[dict[str, DatasetSpec]] = {
-        "landsat_c2": DatasetSpec(
-            collection_id="LANDSAT/LC08/C02/T1_L2",
-            name="Landsat Collection 2 Tier 1 Level 2",
-            satellite="Landsat 8/9",
-            spatial_resolution_meters=30.0,
-            bands=["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7", "ST_B10"],
+    CATALOG: ClassVar[dict[str, DatasetMetadata]] = {
+        "COPERNICUS/S2_SR_HARMONIZED": DatasetMetadata(
+            asset_id="COPERNICUS/S2_SR_HARMONIZED",
+            name="Sentinel-2 MSI Surface Reflectance",
+            bands=["B2", "B3", "B4", "B8", "B11", "B12", "QA60"],
+            resolution_meters=10.0,
+            temporal_coverage="2015-06-23 to present",
+            provider="ESA / Copernicus",
+            cloud_mask_strategy="s2cloudless",
+            recommended_indices=["NDVI", "NDWI", "NDBI"],
         ),
-        "sentinel_2": DatasetSpec(
-            collection_id="COPERNICUS/S2_SR_HARMONIZED",
-            name="Sentinel-2 Surface Reflectance Harmonized",
-            satellite="Sentinel-2A/2B",
-            spatial_resolution_meters=10.0,
-            bands=["B2", "B3", "B4", "B8", "B11", "B12"],
+        "LANDSAT/LC08/C02/T1_L2": DatasetMetadata(
+            asset_id="LANDSAT/LC08/C02/T1_L2",
+            name="Landsat 8 Collection 2 Tier 1 L2",
+            bands=["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7", "ST_B10", "QA_PIXEL"],
+            resolution_meters=30.0,
+            temporal_coverage="2013-04-11 to present",
+            provider="USGS / NASA",
+            cloud_mask_strategy="qa_pixel_mask",
+            recommended_indices=["NDVI", "LST", "NDBI"],
         ),
-        "modis": DatasetSpec(
-            collection_id="MODIS/061/MOD11A1",
-            name="MODIS Land Surface Temperature/Emissivity Daily 1km",
-            satellite="Terra MODIS",
-            spatial_resolution_meters=1000.0,
-            bands=["LST_Day_1km", "QC_Day"],
+        "LANDSAT/LC09/C02/T1_L2": DatasetMetadata(
+            asset_id="LANDSAT/LC09/C02/T1_L2",
+            name="Landsat 9 Collection 2 Tier 1 L2",
+            bands=["SR_B2", "SR_B3", "SR_B4", "SR_B5", "SR_B6", "SR_B7", "ST_B10", "QA_PIXEL"],
+            resolution_meters=30.0,
+            temporal_coverage="2021-10-31 to present",
+            provider="USGS / NASA",
+            cloud_mask_strategy="qa_pixel_mask",
+            recommended_indices=["NDVI", "LST"],
+        ),
+        "USGS/SRTM90_V4": DatasetMetadata(
+            asset_id="USGS/SRTM90_V4",
+            name="SRTM Digital Elevation Data 90m",
+            bands=["elevation"],
+            resolution_meters=90.0,
+            temporal_coverage="2000-02-11 to 2000-02-22",
+            provider="USGS",
+            cloud_mask_strategy="none",
+            recommended_indices=["Slope", "Aspect"],
+        ),
+        "ECMWF/ERA5_LAND/MONTHLY_AGGR": DatasetMetadata(
+            asset_id="ECMWF/ERA5_LAND/MONTHLY_AGGR",
+            name="ERA5-Land Monthly Aggregated",
+            bands=["temperature_2m", "total_precipitation_sum"],
+            resolution_meters=11132.0,
+            temporal_coverage="1950-01-01 to present",
+            provider="ECMWF / Copernicus",
+            cloud_mask_strategy="none",
+            recommended_indices=["ClimateStats"],
+        ),
+        "GOOGLE/DYNAMICWORLD/V1": DatasetMetadata(
+            asset_id="GOOGLE/DYNAMICWORLD/V1",
+            name="Dynamic World V1 Land Cover",
+            bands=[
+                "label",
+                "water",
+                "trees",
+                "grass",
+                "flooded_vegetation",
+                "crops",
+                "shrub_and_scrub",
+                "built",
+                "bare",
+                "snow_and_ice",
+            ],
+            resolution_meters=10.0,
+            temporal_coverage="2015-06-23 to present",
+            provider="Google / World Resources Institute",
+            cloud_mask_strategy="none",
+            recommended_indices=["LandCoverStats"],
         ),
     }
 
-    @classmethod
-    def get_dataset(cls, alias: str) -> DatasetSpec:
-        """Retrieve dataset spec by alias key."""
-        if alias not in cls.DATASETS:
-            msg = (
-                f"Dataset alias '{alias}' not found in catalog. "
-                f"Available: {list(cls.DATASETS.keys())}"
-            )
-            raise KeyError(msg)
-        return cls.DATASETS[alias]
+    def get_dataset(self_or_asset: Any, asset_id: str | None = None) -> DatasetMetadata:
+        """Retrieve dataset metadata by asset ID or short name."""
+        if asset_id is not None:
+            target = asset_id
+        elif isinstance(self_or_asset, str):
+            target = self_or_asset
+        else:
+            target = ""
+        if target == "landsat_c2":
+            target = "LANDSAT/LC08/C02/T1_L2"
+        elif target == "sentinel2_sr":
+            target = "COPERNICUS/S2_SR_HARMONIZED"
+
+        if target not in GEEDatasetCatalog.CATALOG:
+            raise EEDatasetUnavailable(f"Dataset asset ID '{target}' is not in GEEDatasetCatalog.")
+        return GEEDatasetCatalog.CATALOG[target]
+
+    def list_datasets(self) -> list[DatasetMetadata]:
+        """Return list of all registered dataset metadata entries."""
+        return list(self.CATALOG.values())
+
+
+# Backward compatibility alias
+DatasetCatalog = GEEDatasetCatalog

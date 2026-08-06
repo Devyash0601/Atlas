@@ -18,9 +18,7 @@ class ExecutionRecord:
     status: str  # SUCCESS, FAILED
     error_message: str | None = None
     retry_count: int = 0
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(UTC).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class ExecutionHistory:

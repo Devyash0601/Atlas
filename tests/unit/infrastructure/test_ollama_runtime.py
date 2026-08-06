@@ -1,13 +1,17 @@
 """Unit tests for Sprint 1.2 Production Ollama Runtime Subsystem."""
 
 import asyncio
+import json
 import time
+from unittest.mock import patch
 
+import httpx
 import pytest
 
 from src.infrastructure.llm.context_window import ContextWindowManager
 from src.infrastructure.llm.exceptions import (
     ContextOverflow,
+    InvalidModelResponse,
     ModelNotInstalled,
     QueueOverflow,
     StreamingCancelled,
@@ -30,7 +34,7 @@ def test_model_registry_discovery() -> None:
     assert spec.estimated_ram_mb == 5500
     assert spec.quantization == "Q5_K_M"
 
-    assert len(registry.list_installed()) == 3
+    assert len(registry.list_installed()) == 4
 
     with pytest.raises(ModelNotInstalled):
         registry.get_spec("unregistered_model")
@@ -46,7 +50,7 @@ def test_model_manager_idle_unloading() -> None:
     time.sleep(0.15)
 
     unloaded = manager.unload_idle_models()
-    assert "qwen2.5-coder:7b-instruct-q5_k_m" in unloaded
+    assert "qwen2.5-coder:7b" in unloaded
     assert manager.get_memory_usage_mb() == 0
 
 
@@ -140,6 +144,33 @@ async def test_streaming_engine_cancellation() -> None:
 @pytest.mark.asyncio
 async def test_ollama_runtime_generation_flow() -> None:
     """Verify OllamaRuntime warmup, generate, generate_json, streaming, and shutdown."""
+
+    def mock_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/api/generate":
+            payload = json.loads(request.content.decode())
+            if payload.get("stream"):
+                stream_content = '{"response": "token1"}\n{"response": "token2"}\n'
+                return httpx.Response(200, text=stream_content)
+            return httpx.Response(
+                200,
+                json={
+                    "model": "qwen2.5-coder:7b",
+                    "response": '{"status": "ok", "value": 42}',
+                    "done": True,
+                    "prompt_eval_count": 10,
+                    "eval_count": 5,
+                    "total_duration": 50000000,
+                },
+            )
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(mock_handler)
+    orig_client = httpx.AsyncClient
+
+    def mock_client(**kw):
+        kw["transport"] = transport
+        return orig_client(**kw)
+
     runtime = OllamaRuntime()
     assert await runtime.warmup("reasoning") is True
 
@@ -152,17 +183,82 @@ async def test_ollama_runtime_generation_flow() -> None:
     config = GenerationConfig(temperature=0.1, max_tokens=512)
     req = GenerationRequest(prompt_package=pkg, config=config, request_id="test_req_1")
 
-    res = await runtime.generate(req)
-    assert res.request_id == "test_req_1"
-    assert res.tokens_per_second > 0
+    with patch.object(httpx, "AsyncClient", mock_client):
+        res = await runtime.generate(req)
+        assert res.request_id == "test_req_1"
+        assert res.tokens_per_second > 0
 
-    json_res = await runtime.generate_json(req, expected_schema={"required": []})
-    assert json_res.parsed_json is not None
+        json_res = await runtime.generate_json(req, expected_schema={"required": []})
+        assert json_res.parsed_json is not None
 
-    stream_chunks: list[str] = []
-    async for chunk in runtime.stream(req):
-        stream_chunks.append(chunk)
-    assert len(stream_chunks) > 0
+        stream_chunks: list[str] = []
+        async for chunk in runtime.stream(req):
+            stream_chunks.append(chunk)
+        assert len(stream_chunks) == 2
 
     assert runtime.health()["status"] == "healthy"
     await runtime.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_ollama_runtime_connection_and_missing_model_errors() -> None:
+    """Verify OllamaRuntime raises ConnectionError and ModelNotInstalled cleanly."""
+    runtime = OllamaRuntime(ollama_host="http://127.0.0.1:59999")
+
+    pkg = PromptPackage(
+        system_prompt="S",
+        developer_prompt="D",
+        user_prompt="User query",
+        retrieved_context="",
+    )
+    req = GenerationRequest(prompt_package=pkg, request_id="req_err")
+
+    # Connection failure test
+    with pytest.raises(ConnectionError):
+        await runtime.generate(req)
+
+    # Missing model 404 test
+    def mock_404_handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, json={"error": "model not found"})
+
+    transport = httpx.MockTransport(mock_404_handler)
+    orig_client = httpx.AsyncClient
+
+    def mock_client(**kw):
+        kw["transport"] = transport
+        return orig_client(**kw)
+
+    with patch.object(httpx, "AsyncClient", mock_client):
+        with pytest.raises(ModelNotInstalled):
+            await runtime.generate(req)
+
+
+@pytest.mark.asyncio
+async def test_ollama_runtime_invalid_json_error() -> None:
+    """Verify generate_json raises InvalidModelResponse when JSON is invalid."""
+
+    def mock_text_handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"model": "qwen2.5-coder:7b", "response": "Plain non-JSON text"},
+        )
+
+    transport = httpx.MockTransport(mock_text_handler)
+    orig_client = httpx.AsyncClient
+
+    def mock_client(**kw):
+        kw["transport"] = transport
+        return orig_client(**kw)
+
+    runtime = OllamaRuntime()
+    pkg = PromptPackage(
+        system_prompt="S",
+        developer_prompt="D",
+        user_prompt="User query",
+        retrieved_context="",
+    )
+    req = GenerationRequest(prompt_package=pkg, request_id="req_invalid_json")
+
+    with patch.object(httpx, "AsyncClient", mock_client):
+        with pytest.raises(InvalidModelResponse):
+            await runtime.generate_json(req, expected_schema={"type": "object"})

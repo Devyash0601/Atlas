@@ -23,11 +23,11 @@ class CitationManager:
         """Format BibTeX entry string."""
         return (
             f"@article{{{cite_key},\n"
-            f'  author = {{{author}}},\n'
-            f'  title = {{{title}}},\n'
-            f'  journal = {{{journal}}},\n'
-            f'  year = {{{year}}},\n'
-            f'  doi = {{{doi}}}\n'
+            f"  author = {{{author}}},\n"
+            f"  title = {{{title}}},\n"
+            f"  journal = {{{journal}}},\n"
+            f"  year = {{{year}}},\n"
+            f"  doi = {{{doi}}}\n"
             f"}}"
         )
 

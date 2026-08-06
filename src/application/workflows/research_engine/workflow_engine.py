@@ -20,12 +20,14 @@ class WorkflowEngine:
 
     def __init__(
         self,
-        workflow_id: str,
-        context: WorkflowContext,
+        workflow_id: str = "wf_default",
+        context: WorkflowContext | None = None,
         graph: WorkflowGraph | None = None,
     ) -> None:
         self.workflow_id = workflow_id
-        self.context = context
+        self.context = context or WorkflowContext(
+            research_question="Default Research Pipeline Question"
+        )
         self.graph = graph or WorkflowGraph()
         self.artifact_store = ArtifactStore()
         self.state = WorkflowState(

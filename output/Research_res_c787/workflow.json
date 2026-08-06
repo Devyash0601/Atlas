@@ -1,0 +1,16 @@
+{
+  "research_uuid": "res_c78778be",
+  "title": "Automated Scientific Earth Observation Report",
+  "author": "ATLAS-EO Autonomous Scientific Platform",
+  "versions": {
+    "report": "1.0.0",
+    "workflow": "1.0.0",
+    "prompt": "1.0.0",
+    "model": "qwen2.5-coder:7b"
+  },
+  "hashes": {
+    "git_commit": "v0.5.0-core-platform",
+    "config": "sha256-default-config"
+  },
+  "timestamp": "2026-08-06T08:23:52.924161+00:00"
+}

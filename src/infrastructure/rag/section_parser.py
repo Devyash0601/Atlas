@@ -10,6 +10,5 @@ class SectionParser:
     def parse_sections(sections: list[ParsedSection]) -> list[dict[str, str]]:
         """Format section hierarchy list."""
         return [
-            {"title": s.title, "content": s.content, "page": str(s.page_number)}
-            for s in sections
+            {"title": s.title, "content": s.content, "page": str(s.page_number)} for s in sections
         ]

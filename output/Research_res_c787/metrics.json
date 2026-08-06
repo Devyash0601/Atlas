@@ -1,0 +1,22 @@
+{
+  "total_runtime_sec": 6.014,
+  "stage_runtimes": {
+    "STAGE_1_QUESTION_VALIDATION": 0.0,
+    "STAGE_2_RESEARCH_PLANNING": 6.01,
+    "STAGE_3_LITERATURE_RETRIEVAL": 0.0,
+    "STAGE_4_EVIDENCE_VERIFICATION": 0.0,
+    "STAGE_5_WORKFLOW_GRAPH_CONSTRUCTION": 0.0,
+    "STAGE_6_GEE_PLAN_GENERATION": 0.0,
+    "STAGE_7_GEE_EXECUTION": 0.0,
+    "STAGE_8_RESULT_PROCESSING": 0.0,
+    "STAGE_9_PUBLICATION_ENGINE": 0.004,
+    "STAGE_10_EVALUATION_METRICS": 0.0
+  },
+  "llm_latency_sec": 0.0,
+  "embedding_latency_sec": 0.0,
+  "peak_ram_mb": 512.0,
+  "total_tokens_used": 0,
+  "workflow_retries": 0,
+  "citation_count": 3,
+  "hallucination_score": 0.0
+}

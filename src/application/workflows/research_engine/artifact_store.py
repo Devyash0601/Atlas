@@ -19,9 +19,7 @@ class WorkflowArtifact:
     metadata: dict[str, Any] = field(default_factory=dict)
     references: list[str] = field(default_factory=list)
     version: int = 1
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(UTC).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class ArtifactStore:

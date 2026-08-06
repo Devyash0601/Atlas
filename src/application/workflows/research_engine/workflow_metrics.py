@@ -26,9 +26,7 @@ class WorkflowMetrics:
         """Increment Earth Engine call counter."""
         self.ee_calls_count += 1
 
-    def compute_summary(
-        self, state: WorkflowState, history: ExecutionHistory
-    ) -> dict[str, Any]:
+    def compute_summary(self, state: WorkflowState, history: ExecutionHistory) -> dict[str, Any]:
         """Compute execution statistics summary."""
         total_time = sum(state.node_timings.values())
         return {

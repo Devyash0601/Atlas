@@ -11,12 +11,18 @@ class StructuredOutputParser:
 
     @staticmethod
     def _clean_json_text(raw_text: str) -> str:
-        """Strip markdown fences from raw LLM output text."""
+        """Strip markdown fences and non-JSON preamble from raw LLM output text."""
         cleaned = raw_text.strip()
         if "```json" in cleaned:
-            return cleaned.split("```json")[1].split("```")[0].strip()
-        if "```" in cleaned:
-            return cleaned.split("```")[1].split("```")[0].strip()
+            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            cleaned = cleaned[start : end + 1].strip()
+
         return cleaned
 
     @classmethod

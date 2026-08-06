@@ -40,6 +40,15 @@ class ModelRegistry:
     """Registry tracking supported local models, discovery, and RAM estimates."""
 
     SUPPORTED_MODELS: ClassVar[dict[str, ModelSpec]] = {
+        "qwen2.5-coder:7b": ModelSpec(
+            name="qwen2.5-coder:7b",
+            provider="Alibaba/Ollama",
+            modality="text-to-text",
+            parameter_count="7B",
+            quantization="Q4_K_M",
+            context_window=8192,
+            estimated_ram_mb=5500,
+        ),
         "qwen2.5-coder:7b-instruct-q5_k_m": ModelSpec(
             name="qwen2.5-coder:7b-instruct-q5_k_m",
             provider="Alibaba/Ollama",

@@ -49,9 +49,7 @@ class PDFParser:
             ParsedSection(
                 title="2. Methodology", content=text_content[300:800], page_number=2, level=1
             ),
-            ParsedSection(
-                title="3. Results", content=text_content[800:], page_number=3, level=1
-            ),
+            ParsedSection(title="3. Results", content=text_content[800:], page_number=3, level=1),
         ]
 
         abstract_text = (

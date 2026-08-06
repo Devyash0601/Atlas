@@ -50,6 +50,13 @@ class PromptEngine:
         )
         self.registry.register(hypothesis_template, hypothesis_schema_alias)
 
+        from src.infrastructure.llm.prompts.research_planner import (
+            RESEARCH_PLANNER_SCHEMA,
+            RESEARCH_PLANNER_TEMPLATE,
+        )
+
+        self.registry.register(RESEARCH_PLANNER_TEMPLATE, RESEARCH_PLANNER_SCHEMA)
+
     def render(self, template_id: str, **kwargs: Any) -> str:
         """Render prompt template string by ID."""
         template, _ = self.registry.get(template_id)

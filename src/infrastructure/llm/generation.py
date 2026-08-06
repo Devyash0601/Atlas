@@ -22,7 +22,7 @@ class GenerationRequest:
     """LLM Generation request wrapping PromptPackage and config."""
 
     prompt_package: PromptPackage
-    model_name: str = "qwen2.5-coder:7b-instruct-q5_k_m"
+    model_name: str = "qwen2.5-coder:7b"
     config: GenerationConfig = field(default_factory=GenerationConfig)
     request_id: str = "req_default"
     priority: int = 0

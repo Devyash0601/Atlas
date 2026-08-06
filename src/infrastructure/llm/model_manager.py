@@ -11,8 +11,8 @@ class ModelManager:
     """Local model manager for Ollama inference engines with lazy loading and idle unloading."""
 
     SUPPORTED_MODELS: ClassVar[dict[str, str]] = {
-        "reasoning": "qwen2.5-coder:7b-instruct-q5_k_m",
-        "vision": "qwen2-vl:7b-instruct-q4_k_m",
+        "reasoning": "qwen2.5-coder:7b",
+        "vision": "qwen2.5-coder:7b",
         "embedding": "nomic-embed-text:v1.5",
         "reranker": "bge-reranker-base",
     }
