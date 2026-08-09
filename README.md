@@ -126,21 +126,33 @@ make verify        # Run complete quality gate verification (Linter + TypeCheck 
 - [Contributing Guide](docs/CONTRIBUTING_GUIDE.md)
 - [FAQ](docs/FAQ.md) | [Troubleshooting](docs/TROUBLESHOOTING.md)
 
+## 🔑 Google Earth Engine Credential Setup
+
+1. Create/configure a Google Cloud project with Earth Engine enabled at [code.earthengine.google.com](https://code.earthengine.google.com/).
+2. Create a service account in GCP IAM and download the JSON key.
+3. Store the JSON file securely **OUTSIDE** the Git repository (e.g. `/path/to/atlas-earth-engine.json`).
+4. Configure credentials in `.env`:
+   ```bash
+   GEE_PROJECT_ID=your-gee-project-id
+   GEE_SERVICE_ACCOUNT=your-sa@your-project.iam.gserviceaccount.com
+   GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
+   ```
+
 ---
 
 ## 🗺️ Roadmap & Phase Execution
 
 - [x] **Phase 1**: Repository Initialization & API Foundation
 - [x] **Phase 1.1**: Repository Hardening & Developer Tooling
-- [ ] **Phase 2**: Backend Foundation & Settings Loader
-- [ ] **Phase 3**: Frontend Navigation & Components
-- [ ] **Phase 4**: Database Layer & Alembic Migrations
-- [ ] **Phase 5**: Provider Interfaces (`LLMProvider`, `EarthEngineProvider`, etc.)
-- [ ] **Phase 6**: Literature RAG Pipeline
-- [ ] **Phase 7**: Google Earth Engine Subsystem
-- [ ] **Phase 8**: Agent Orchestration Engine
-- [ ] **Phase 9**: Vision Subsystem Integration
-- [ ] **Phase 10**: Scientific Verification & Report Generator
+- [x] **Phase 2**: Backend Foundation & Settings Loader
+- [x] **Phase 3**: Frontend Navigation & Components
+- [x] **Phase 4**: Database Layer & Alembic Migrations
+- [x] **Phase 5**: Provider Interfaces (`LLMProvider`, `EarthEngineProvider`, etc.)
+- [x] **Phase 6**: Literature RAG Pipeline
+- [x] **Phase 7**: Google Earth Engine Subsystem & Projected 30m Metric Sampling
+- [x] **Phase 8**: Agent Orchestration Engine
+- [x] **Phase 9**: Vision Subsystem Integration
+- [x] **Phase 10**: Scientific Verification, Research Dashboard & Release v1.0.0
 
 ---
 

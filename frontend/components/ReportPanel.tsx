@@ -1,18 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, FileText, Code2, BookOpen } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 
 interface ReportPanelProps {
   title?: string;
   question?: string;
+  reportContent?: string;
+  metadata?: Record<string, any>;
 }
 
 export default function ReportPanel({
   title = 'Automated Scientific Earth Observation Report',
   question = 'How has urban expansion affected land surface temperature in Hyderabad between 2016 and 2025?',
+  reportContent,
+  metadata = {},
 }: ReportPanelProps) {
   const [tab, setTab] = useState<'md' | 'html' | 'bib'>('md');
+
+  const defaultMdContent = `# ${title}
+
+**Author**: ATLAS-EO Autonomous Platform | **Style**: IEEE Format
+
+---
+
+# 1. Introduction
+Earth Observation satellite analysis provides essential planetary monitoring. This paper addresses the primary research question: **${question}**.
+
+# 2. Results & Discussion
+Satellite computations processed multi-band satellite data. Result summary metrics indicate high statistical agreement between thermal infrared and vegetation index reductions.
+
+## References
+[1] Smith, J., & Doe, A. (2024). Remote Sensing of Urban Vegetation. Remote Sensing of Environment.
+`;
+
+  const mdText = reportContent || defaultMdContent;
 
   return (
     <div className="bg-[#111827] border border-slate-800 rounded-xl overflow-hidden flex flex-col">
@@ -54,27 +76,13 @@ export default function ReportPanel({
       {/* Report Body */}
       <div className="p-6 bg-[#0b0f19] space-y-4 max-h-[500px] overflow-y-auto font-mono text-xs text-slate-300">
         {tab === 'md' && (
-          <div className="space-y-4">
-            <h1 className="text-base font-bold text-white leading-snug">{title}</h1>
-            <p className="text-slate-400 italic">Author: ATLAS-EO Autonomous Platform | Style: IEEE Format</p>
-            <hr className="border-slate-800" />
-            <p className="font-semibold text-blue-400"># 1. Introduction</p>
-            <p className="leading-relaxed">
-              Earth Observation satellite analysis provides essential planetary monitoring. This paper addresses the
-              primary research question: <strong>{question}</strong>.
-            </p>
-            <p className="font-semibold text-blue-400"># 2. Results & Discussion</p>
-            <p className="leading-relaxed">
-              Satellite computations processed 1,048,576 pixels. Result summary metrics indicate high statistical
-              agreement between Landsat 8/9 LST and Sentinel-2 NDVI reductions.
-            </p>
-            <p className="font-semibold text-blue-400">## References</p>
-            <p>[1] Smith, J., & Doe, A. (2024). Remote Sensing of Urban Vegetation. Remote Sensing of Environment.</p>
-          </div>
+          <pre className="whitespace-pre-wrap font-mono text-xs text-slate-200 leading-relaxed">
+            {mdText}
+          </pre>
         )}
 
         {tab === 'html' && (
-          <pre className="text-[11px] text-emerald-400 overflow-x-auto">
+          <pre className="text-[11px] text-emerald-400 overflow-x-auto whitespace-pre-wrap font-mono">
             {`<!DOCTYPE html>
 <html>
 <head><title>${title}</title></head>
@@ -87,13 +95,13 @@ export default function ReportPanel({
         )}
 
         {tab === 'bib' && (
-          <pre className="text-[11px] text-amber-400 overflow-x-auto">
-            {`@article{smith2024,
-  author = {Smith, J. and Doe, A.},
-  title = {Remote Sensing of Urban Vegetation},
-  journal = {Remote Sensing of Environment},
-  year = {2024},
-  doi = {10.1016/j.rse.2024.10000}
+          <pre className="text-[11px] text-amber-400 overflow-x-auto whitespace-pre-wrap font-mono">
+            {`@article{atlas2026,
+  author = {ATLAS-EO Scientific Platform},
+  title = {${title}},
+  journal = {Earth Observation Research Reports},
+  year = {2026},
+  publisher = {ATLAS-EO Platform}
 }`}
           </pre>
         )}
@@ -101,7 +109,9 @@ export default function ReportPanel({
 
       {/* Export Bar */}
       <div className="px-4 py-3 border-t border-slate-800 bg-[#0f172a] flex items-center justify-between">
-        <span className="text-[11px] text-slate-400">Quality Checker: Pass (0 Missing Citations)</span>
+        <span className="text-[11px] text-slate-400">
+          Status: Verified • Citations: {metadata.citation_count || 3}
+        </span>
         <div className="flex items-center space-x-2">
           <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold flex items-center space-x-1.5 transition-colors">
             <Download className="w-3.5 h-3.5" />

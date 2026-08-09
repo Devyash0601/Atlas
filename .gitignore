@@ -38,6 +38,16 @@ htmlcov/
 *.pem
 *.key
 
+# Google Cloud / Earth Engine Service Account Keys
+Documents/
+*secrets*
+atlas-earth-engine.json
+*-service-account*.json
+*-credentials*.json
+*-sa-key*.json
+*service_account*.json
+*gee-key*.json
+
 # Frontend & Node
 frontend/node_modules/
 frontend/.next/
@@ -108,3 +118,6 @@ reports/
 
 # Logs
 *.log
+
+# Local verification scripts
+scratch/

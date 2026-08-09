@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     DEFAULT_LLM_MODEL: str = "qwen3:8b"
     DEFAULT_EMBEDDING_MODEL: str = "nomic-embed-text"
 
+    # Google Earth Engine Settings
+    GEE_PROJECT_ID: str = "atlas-eo-project"
+    GEE_SERVICE_ACCOUNT: str | None = None
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = None
+    GEE_CACHE_TTL_SEC: int = 600
+
     @property
     def postgres_dsn(self) -> str:
         """Asynchronous PostgreSQL DSN URI."""
