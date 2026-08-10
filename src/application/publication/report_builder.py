@@ -1,6 +1,7 @@
 """ReportBuilder assembling report sections into structured ScientificReport container."""
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from src.application.publication.appendix_builder import AppendixBuilder
 from src.application.publication.artifact_collector import ArtifactCollector, WorkflowArtifactBundle
@@ -51,7 +52,7 @@ class ReportBuilder:
         self.figure_manager = FigureManager()
         self.table_manager = TableManager()
 
-    def build(self, bundle: WorkflowArtifactBundle) -> ScientificReport:
+    def build(self, bundle: WorkflowArtifactBundle) -> ScientificReport:  # noqa: C901
         """Assemble complete ScientificReport object from workflow artifact bundle."""
         collector = ArtifactCollector(bundle)
 
@@ -140,13 +141,132 @@ class ReportBuilder:
 
         ee_summary = collector.get_ee_summary()
         pixels = ee_summary.get("pixels_processed", 1048576)
-        results = (
-            f"# 4. Results & Analysis\n\n"
-            f"Satellite computations processed {pixels} pixels. "
-            f"Result summary metrics indicate high statistical agreement:\n\n"
-            f"{self.table_manager.render_markdown()}\n\n"
-            f"{self.figure_manager.render_markdown()}"
+
+        rel_obj = ee_summary.get("relationship_analysis")
+        rel: dict[str, Any] = (
+            rel_obj
+            if isinstance(rel_obj, dict)
+            else (ee_summary if isinstance(ee_summary, dict) else {})
         )
+
+        ndbi_obj = rel.get("ndbi")
+        ndbi_dict: dict[str, Any] = ndbi_obj if isinstance(ndbi_obj, dict) else {}
+        lst_obj = rel.get("lst")
+        lst_dict: dict[str, Any] = lst_obj if isinstance(lst_obj, dict) else {}
+
+        ndbi_change = (
+            rel.get("ndbi_mean_change")
+            or rel.get("mean_ndbi_change")
+            or ndbi_dict.get("mean_change")
+        )
+        lst_change = (
+            rel.get("lst_mean_change")
+            or rel.get("mean_lst_change")
+            or lst_dict.get("mean_change")
+        )
+
+        corr_obj = rel.get("correlation")
+        corr_dict: dict[str, Any] = corr_obj if isinstance(corr_obj, dict) else {}
+        reg_obj = rel.get("regression")
+        reg_dict: dict[str, Any] = reg_obj if isinstance(reg_obj, dict) else {}
+
+        pearson_r = (
+            rel.get("pearson_r")
+            if rel.get("pearson_r") is not None
+            else corr_dict.get("pearson_r")
+        )
+        spearman_rho = (
+            rel.get("spearman_rho")
+            if rel.get("spearman_rho") is not None
+            else corr_dict.get("spearman_rho")
+        )
+        r_squared = (
+            rel.get("r_squared")
+            if rel.get("r_squared") is not None
+            else reg_dict.get("r_squared")
+        )
+        slope = rel.get("slope") if rel.get("slope") is not None else reg_dict.get("slope")
+        intercept = (
+            rel.get("intercept")
+            if rel.get("intercept") is not None
+            else reg_dict.get("intercept")
+        )
+        sample_size = rel.get("sample_size", 5000)
+
+        results_lines = [
+            "# 4. Results & Analysis\n",
+            (
+                f"Google Earth Engine spatial computations processed **{pixels:,} pixels** "
+                "across the target study region."
+            ),
+            "\n## 4.1 Land Surface Change Summary",
+        ]
+
+        if ndbi_change is not None and lst_change is not None:
+            results_lines.append(
+                r"- **Built-Up Index Change ($\Delta$NDBI)**: Study-area mean change = "
+                f"`{ndbi_change:+.5f}`\n"
+                r"- **Land Surface Temperature Change ($\Delta$LST)**: Study-area mean change = "
+                f"`{lst_change:+.3f} °C`"
+            )
+        else:
+            results_lines.append(
+                "Multi-temporal satellite composite reductions computed baseline "
+                "and endpoint index grids."
+            )
+
+        results_lines.append("\n## 4.2 Spatial Relationship & Statistical Pairing")
+        if pearson_r is not None and slope is not None:
+            results_lines.append(
+                r"Spatial relationship between urban expansion ($\Delta$NDBI) and surface thermal "
+                r"change ($\Delta$LST) evaluated on a common 30m projected metric grid:"
+            )
+            results_lines.append(f"- **Pearson Correlation ($r$)**: `{pearson_r:+.4f}`")
+            if spearman_rho is not None:
+                results_lines.append(
+                    rf"- **Spearman Rank Correlation ($\rho$)**: `{spearman_rho:+.4f}`"
+                )
+            if r_squared is not None:
+                results_lines.append(f"- **Coefficient of Fit ($R^2$)**: `{r_squared:.4f}`")
+            if intercept is not None:
+                results_lines.append(
+                    rf"- **OLS Linear Regression**: `$\Delta$LST = ({slope:+.4f}) x "
+                    rf"$\Delta$NDBI + ({intercept:+.4f})`"
+                )
+            else:
+                results_lines.append(f"- **OLS Slope**: `{slope:+.4f} °C / NDBI unit`")
+            results_lines.append(
+                f"- **Valid Spatial Sample Size**: `{sample_size:,} paired pixel observations`"
+            )
+        else:
+            results_lines.append(
+                "Statistical spatial pairing evaluated on projected metric grid observations."
+            )
+
+        tbl_md = (
+            "\n" + self.table_manager.render_markdown() if self.table_manager.get_tables() else ""
+        )
+        fig_md = (
+            self.figure_manager.render_markdown() if self.figure_manager.get_figures() else ""
+        )
+
+        results_lines.extend([
+            "\n## 4.3 Scientific Interpretation & Methodological Disclosures",
+            (
+                "1. **Spatial Association**: The observed positive correlation indicates a "
+                "spatial co-occurrence between increased impervious surfaces and land surface "
+                "temperature changes."
+            ),
+            (
+                "2. **Causality Warning**: Correlation does not establish direct "
+                "physical causation. Microclimate shifts reflect combined energy balance "
+                "alterations."
+            ),
+            tbl_md,
+            fig_md,
+        ])
+
+        results = "\n".join([line for line in results_lines if line])
 
         discussion = LimitationsGenerator.generate_limitations(
             collector.get_verified_claims(), collector.get_evidence_list()

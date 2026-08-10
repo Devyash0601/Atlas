@@ -24,8 +24,10 @@ class PipelineMetrics:
 
     def get_summary(self) -> dict[str, Any]:
         """Return metrics summary dictionary."""
+        tot = round(self.total_runtime_sec, 3)
         return {
-            "total_runtime_sec": round(self.total_runtime_sec, 3),
+            "total_runtime_sec": tot,
+            "total_execution_time_sec": tot,
             "stage_runtimes": self.stage_runtimes,
             "llm_latency_sec": round(self.llm_latency_sec, 3),
             "embedding_latency_sec": round(self.embedding_latency_sec, 3),

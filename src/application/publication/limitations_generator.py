@@ -16,8 +16,8 @@ class LimitationsGenerator:
         missing_evidence = [e for e in evidence_items if not e.get("has_pdf_source", True)]
 
         lines: list[str] = [
-            "## Discussion & Limitations\n",
-            "### Threats to Validity & System Constraints",
+            "# 5. Discussion & Limitations\n",
+            "## 5.1 Threats to Validity & System Constraints",
             (
                 "1. **Spatial & Temporal Scope**: Results apply strictly to defined "
                 "Region of Interest (ROI) and specified temporal windows."
@@ -41,7 +41,7 @@ class LimitationsGenerator:
             )
 
         lines.append(
-            "\n### Future Work\nFuture investigations will integrate SAR imagery (Sentinel-1) "
+            "\n## 5.2 Future Work\nFuture investigations will integrate SAR imagery (Sentinel-1) "
             "and commercial imagery to resolve sub-pixel land cover misclassifications."
         )
 

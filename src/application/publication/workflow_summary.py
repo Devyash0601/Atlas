@@ -11,13 +11,14 @@ class WorkflowSummaryGenerator:
         """Generate structured Workflow Summary section."""
         total_nodes = len(history)
         total_retries = sum(item.get("retries", 0) for item in history)
-        total_time = metrics.get("total_execution_time_sec", 0.0)
+        tot_exec_time = metrics.get("total_execution_time_sec")
+        total_time = tot_exec_time or metrics.get("total_runtime_sec", 0.0)
 
         lines: list[str] = [
             "### Workflow Methodology & DAG Execution",
             (
-                f"The research pipeline executed an autonomous 7-stage Directed Acyclic Graph "
-                f"(DAG) workflow containing **{total_nodes} nodes**."
+                f"The research pipeline executed an autonomous {total_nodes}-stage "
+                f"Directed Acyclic Graph (DAG) workflow containing **{total_nodes} nodes**."
             ),
             f"- **Total Execution Time**: {total_time:.2f} seconds",
             f"- **Execution Retries**: {total_retries}",
