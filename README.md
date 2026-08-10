@@ -51,7 +51,7 @@ graph TD
 - 🔄 **Strict Reproducibility**: Logged execution parameters and controlled randomness for scientific replication.
 - 🧩 **Clean Architecture & DDD**: Pure business domain isolated from frameworks, databases, and AI SDKs.
 - 🛡️ **Polymorphic Provider Abstraction**: LLMs (`qwen3:8b`), Embeddings (`nomic-embed-text`), and Vector Stores (`Qdrant`) run behind swappable provider contracts.
-- 💻 **Local-First Execution**: Fully optimized for Apple Silicon (M1/M2/M3). Zero paid cloud LLM dependencies.
+- 💻 **Local-First Execution**:Zero paid cloud LLM dependencies.
 
 ---
 
