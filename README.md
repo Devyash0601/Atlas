@@ -500,23 +500,6 @@ alongside clean MyPy, Ruff and frontend verification during the latest correctne
 
 ---
 
-# 📖 Documentation
-
-The repository contains a substantial technical specification and architecture history.
-
-Start with:
-
-- [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) — development environment
-- [`docs/CODING_WORKFLOW.md`](docs/CODING_WORKFLOW.md) — contribution workflow
-- [`docs/CONTRIBUTING_GUIDE.md`](docs/CONTRIBUTING_GUIDE.md) — contribution guidance
-- [`docs/FAQ.md`](docs/FAQ.md) — frequently asked questions
-- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) — troubleshooting
-- [`docs/dependencies.md`](docs/dependencies.md) — dependency rationale
-- [`docs/adr/`](docs/adr/) — architecture decision records
-
-The application itself also exposes technical specifications through its **About & Docs** workspace.
-
----
 
 # 🗺️ Project Status
 
